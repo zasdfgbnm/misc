@@ -8,8 +8,6 @@
 
 namespace at { namespace native { namespace mem {
 
-static_assert(sizeof(long) == 8, "long is assumed to be 64bit");
-
 template <typename scalar_t>
 struct has_builtin_vector_type : public std::false_type {};
 
@@ -35,21 +33,32 @@ struct Info;
 // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#built-in-vector-types
 
 //                    TYPE, SIZE, VECTYPE, ALIGNMENT
-DEFINE_VECTOR_INFO( int8_t,    1,  int8_t,         1);
-DEFINE_VECTOR_INFO( int8_t,    2,   char2,         2);
-DEFINE_VECTOR_INFO( int8_t,    4,   char4,         4);
 DEFINE_VECTOR_INFO(uint8_t,    1, uint8_t,         1);
 DEFINE_VECTOR_INFO(uint8_t,    2,  uchar2,         2);
 DEFINE_VECTOR_INFO(uint8_t,    4,  uchar4,         4);
+
+DEFINE_VECTOR_INFO( int8_t,    1,  int8_t,         1);
+DEFINE_VECTOR_INFO( int8_t,    2,   char2,         2);
+DEFINE_VECTOR_INFO( int8_t,    4,   char4,         4);
+
 DEFINE_VECTOR_INFO(int16_t,    1, int16_t,         2);
 DEFINE_VECTOR_INFO(int16_t,    2,  short2,         4);
 DEFINE_VECTOR_INFO(int16_t,    4,  short4,         8);
+
+DEFINE_VECTOR_INFO(    int,    1,     int,         4);
 DEFINE_VECTOR_INFO(    int,    2,    int2,         8);
 DEFINE_VECTOR_INFO(    int,    4,    int4,        16);
+
+static_assert(sizeof(long) == 8, "long is assumed to be 64bit");
+DEFINE_VECTOR_INFO(int64_t,    1, int64_t,         8);
 DEFINE_VECTOR_INFO(int64_t,    2,   long2,        16);
 DEFINE_VECTOR_INFO(int64_t,    4,   long4,        16);
+
+DEFINE_VECTOR_INFO(  float,    1,   float,         4);
 DEFINE_VECTOR_INFO(  float,    2,  float2,         8);
 DEFINE_VECTOR_INFO(  float,    4,  float4,        16);
+
+DEFINE_VECTOR_INFO( double,    1,  double,         8);
 DEFINE_VECTOR_INFO( double,    2, double2,        16);
 DEFINE_VECTOR_INFO( double,    4, double4,        16);
 
@@ -112,8 +121,9 @@ template <
   int block_load_size,   // number of elements each block needs to handle.
   int vec_size           // vector size, can be 1, 2, or 3.
 >
-struct UnrollWithVec {
+struct vectorized {
 
+  static constexpr int thread_load_size = block_load_size / num_threads;
   static constexpr int loop_size = thread_load_size / vec_size;
 
   __device__ inline void load(scalar_t to[thread_load_size], scalar_t *from) {
@@ -148,13 +158,12 @@ struct UnrollWithVec {
 
 template<typename scalar_t>
 constexpr inline int can_vectorize_up_to(int address_mod_16) {
-  if (!has_builtin_vector_type<scalar_t>::value) {
-    return 1;
-  }
-  if (address_mod_16 % Info<scalar_t, 4>::alignment == 0) {
-    return 4;
-  } else if (address_mod_16 % Info<scalar_t, 2>::alignment == 0) {
-    return 2;
+  if (has_builtin_vector_type<scalar_t>::value) {
+    if (address_mod_16 % Info<scalar_t, 4>::alignment == 0) {
+      return 4;
+    } else if (address_mod_16 % Info<scalar_t, 2>::alignment == 0) {
+      return 2;
+    }
   }
   return 1;
 }
