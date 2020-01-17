@@ -1,6 +1,6 @@
 #include "MemAccess.cuh"
 
-using namespace at::native::mem;
+using namespace at::native::memory;
 
 int main() {
 

@@ -6,7 +6,7 @@
 // References:
 // https://devblogs.nvidia.com/cuda-pro-tip-increase-performance-with-vectorized-memory-access/
 
-namespace at { namespace native { namespace mem {
+namespace at { namespace native { namespace memory {
 
 template <typename scalar_t>
 struct has_builtin_vector_type : public std::false_type {};
@@ -157,15 +157,16 @@ struct vectorized {
 };
 
 template<typename scalar_t>
-constexpr inline int can_vectorize_up_to(int address_mod_16) {
+inline int can_vectorize_up_to(char *pointer) {
+  uint64_t address = reinterpret_cast<uint64_t>(pointer);
   if (has_builtin_vector_type<scalar_t>::value) {
-    if (address_mod_16 % Info<scalar_t, 4>::alignment == 0) {
+    if (address % Info<scalar_t, 4>::alignment == 0) {
       return 4;
-    } else if (address_mod_16 % Info<scalar_t, 2>::alignment == 0) {
+    } else if (address % Info<scalar_t, 2>::alignment == 0) {
       return 2;
     }
   }
   return 1;
 }
 
-}}} // namespace at::native::mem
+}}} // namespace at::native::memory
