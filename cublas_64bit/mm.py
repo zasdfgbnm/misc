@@ -1,9 +1,9 @@
 import torch as th
 
-N = 16909322
+N = 2 ** 25
 #N = 16909321 # << this one won't fail
 
-K = 127
+K = 2 ** 7
 
 print(f"Allocating {2*N*K / (1024**3)} GB ...")
 U = th.zeros((N, K), dtype=th.half, device="cuda:0")
