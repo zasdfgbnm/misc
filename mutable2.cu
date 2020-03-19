@@ -21,7 +21,7 @@ __host__ __device__ float invoke(func_t &f) {
 template<typename func_t>
 void gpu_kernel_impl(func_t f) {
   launch_kernel([=]__host__ __device__() mutable {
-    float *out = nullptr;
+    float* out = nullptr;
     *out = invoke<func_t>(f);
   });
 }
