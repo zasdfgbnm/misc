@@ -28,7 +28,7 @@ void gpu_kernel_impl(func_t f) {
 
 int main() {
     float thread_work_index_ = 0;
-    gpu_kernel_impl([thread_work_index_]() mutable -> float {
+    gpu_kernel_impl([thread_work_index_]__host__ __device__() mutable -> float {
       return thread_work_index_++;
     });
 }

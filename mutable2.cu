@@ -27,6 +27,6 @@ void gpu_kernel_impl(func_t f) {
 }
 
 int main() {
-  int a = 0;
+  float a = 0;
   gpu_kernel_impl([=]__host__ __device__() mutable { return a++; });
 }
