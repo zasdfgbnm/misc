@@ -1,3 +1,4 @@
 a.out
 .ipynb*
 .vscode
+__pycache__
