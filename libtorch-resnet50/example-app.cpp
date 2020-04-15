@@ -33,6 +33,7 @@ NForwardPass(void* run)
   run1.inputs_ = inputs_;
 
   auto run_tmp = &run1;
+  run_tmp->output_ = run_tmp->module_.forward(run_tmp->inputs_).toTensor();
 
   for (int i = 0; i < 5; i++) {
     cudaDeviceSynchronize();
@@ -68,6 +69,7 @@ ForwardPass(void* run)
   run1.inputs_ = inputs_;
 
   auto run_tmp = &run1;
+  run_tmp->output_ = run_tmp->module_.forward(run_tmp->inputs_).toTensor();
 
   cudaDeviceSynchronize();
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -97,6 +99,7 @@ main()
 
   run1.module_ = module1;
   run1.inputs_ = inputs_;
+  run1.output_ = run1.module_.forward(run1.inputs_).toTensor();
 
   // Run model in main thread N times and report runtime each time
   for (int i = 0; i < 5; i++) {
