@@ -1,0 +1,242 @@
+
+I! CuDNN (v7603) function cudnnCreate() called:
+i! Time: 2020-05-18T12:45:27.936772 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetStream() called:
+i!     handle: type=cudnnHandle_t; streamId=(nil) (defaultStream);
+i!     streamId: type=cudaStream_t; streamId=(nil) (defaultStream);
+i! Time: 2020-05-18T12:45:27.940568 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=0; Handle=0x5647299ed0f0; StreamId=(nil) (defaultStream).
+
+
+I! CuDNN (v7603) function cudnnCreateTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942182 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetTensorNdDescriptor() called:
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!     nbDims: type=int; val=5;
+i!     dimA: type=int; val=[1,64,24,512,512];
+i!     strideA: type=int; val=[402653184,6291456,262144,512,1];
+i! Time: 2020-05-18T12:45:27.942208 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnCreateFilterDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942220 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetFilterNdDescriptor() called:
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!     format: type=cudnnTensorFormat_t; val=CUDNN_TENSOR_NCHW (0);
+i!     nbDims: type=int; val=5;
+i!     filterDimA: type=int; val=[64,64,3,3,3];
+i! Time: 2020-05-18T12:45:27.942230 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnCreateTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942236 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetTensorNdDescriptor() called:
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!     nbDims: type=int; val=5;
+i!     dimA: type=int; val=[1,64,24,512,512];
+i!     strideA: type=int; val=[402653184,6291456,262144,512,1];
+i! Time: 2020-05-18T12:45:27.942243 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnCreateConvolutionDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942253 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetConvolutionNdDescriptor() called:
+i!     arrayLength: type=int; val=3;
+i!     padA: type=int; val=[1,1,1];
+i!     strideA: type=int; val=[1,1,1];
+i!     dilationA: type=int; val=[1,1,1];
+i!     mode: type=cudnnConvolutionMode_t; val=CUDNN_CROSS_CORRELATION (1);
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i! Time: 2020-05-18T12:45:27.942265 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetConvolutionGroupCount() called:
+i!     groupCount: type=int; val=1;
+i! Time: 2020-05-18T12:45:27.942274 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetConvolutionMathType() called:
+i!     mathType: type=cudnnMathType_t; val=CUDNN_DEFAULT_MATH (0);
+i! Time: 2020-05-18T12:45:27.942282 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnGetConvolutionForwardWorkspaceSize() called:
+i!     handle: type=cudnnHandle_t; streamId=(nil) (defaultStream);
+i!     xDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[1,64,24,512,512];
+i!         strideA: type=int; val=[402653184,6291456,262144,512,1];
+i!     wDesc: type=cudnnFilterDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[64,64,3,3,3];
+i!         format: type=cudnnTensorFormat_t; val=CUDNN_TENSOR_NCHW (0);
+i!     convDesc: type=cudnnConvolutionDescriptor_t:
+i!         mode: type=cudnnConvolutionMode_t; val=CUDNN_CROSS_CORRELATION (1);
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         mathType: type=cudnnMathType_t; val=CUDNN_DEFAULT_MATH (0);
+i!         reorderType: type=int; val=0;
+i!         arrayLength: type=int; val=3;
+i!         padA: type=int; val=[1,1,1];
+i!         strideA: type=int; val=[1,1,1];
+i!         dilationA: type=int; val=[1,1,1];
+i!         groupCount: type=int; val=1;
+i!     yDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[1,64,24,512,512];
+i!         strideA: type=int; val=[402653184,6291456,262144,512,1];
+i!     algo: type=cudnnConvolutionFwdAlgo_t; val=CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM (1);
+i! Time: 2020-05-18T12:45:27.942309 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=0; Handle=0x5647299ed0f0; StreamId=(nil) (defaultStream).
+
+
+I! CuDNN (v7603) function cudnnSetConvolutionMathType() called:
+i!     mathType: type=cudnnMathType_t; val=CUDNN_DEFAULT_MATH (0);
+i! Time: 2020-05-18T12:45:27.942506 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnConvolutionForward() called:
+i!     handle: type=cudnnHandle_t; streamId=(nil) (defaultStream);
+i!     alpha: type=CUDNN_DATA_FLOAT; val=1.000000;
+i!     xDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[1,64,24,512,512];
+i!         strideA: type=int; val=[402653184,6291456,262144,512,1];
+i!     xData: location=dev; addr=0x7fabb0000000;
+i!     wDesc: type=cudnnFilterDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[64,64,3,3,3];
+i!         format: type=cudnnTensorFormat_t; val=CUDNN_TENSOR_NCHW (0);
+i!     wData: location=dev; addr=0x7fac10200000;
+i!     convDesc: type=cudnnConvolutionDescriptor_t:
+i!         mode: type=cudnnConvolutionMode_t; val=CUDNN_CROSS_CORRELATION (1);
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         mathType: type=cudnnMathType_t; val=CUDNN_DEFAULT_MATH (0);
+i!         reorderType: type=int; val=0;
+i!         arrayLength: type=int; val=3;
+i!         padA: type=int; val=[1,1,1];
+i!         strideA: type=int; val=[1,1,1];
+i!         dilationA: type=int; val=[1,1,1];
+i!         groupCount: type=int; val=1;
+i!     algo: type=cudnnConvolutionFwdAlgo_t; val=CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM (1);
+i!     workSpace: location=dev; addr=0x7fab48000000;
+i!     workSpaceSizeInBytes: type=size_t; val=113445012;
+i!     beta: type=CUDNN_DATA_FLOAT; val=0.000000;
+i!     yDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[1,64,24,512,512];
+i!         strideA: type=int; val=[402653184,6291456,262144,512,1];
+i!     yData: location=dev; addr=0x7fab50000000;
+i! Time: 2020-05-18T12:45:27.942541 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=0; Handle=0x5647299ed0f0; StreamId=(nil) (defaultStream).
+
+
+I! CuDNN (v7603) function cudnnDestroyConvolutionDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942600 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnDestroyFilterDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942610 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnDestroyTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942617 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnDestroyTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942626 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnCreateTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942645 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetTensorNdDescriptor() called:
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!     nbDims: type=int; val=5;
+i!     dimA: type=int; val=[1,64,1,1,1];
+i!     strideA: type=int; val=[64,1,1,1,1];
+i! Time: 2020-05-18T12:45:27.942657 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnCreateTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942664 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnSetTensorNdDescriptor() called:
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!     nbDims: type=int; val=5;
+i!     dimA: type=int; val=[1,64,24,512,512];
+i!     strideA: type=int; val=[402653184,6291456,262144,512,1];
+i! Time: 2020-05-18T12:45:27.942670 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnAddTensor() called:
+i!     handle: type=cudnnHandle_t; streamId=(nil) (defaultStream);
+i!     alpha: type=CUDNN_DATA_FLOAT; val=1.000000;
+i!     biasDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[1,64,1,1,1];
+i!         strideA: type=int; val=[64,1,1,1,1];
+i!     biasData: location=dev; addr=0x7fac1026c000;
+i!     beta: type=CUDNN_DATA_FLOAT; val=1.000000;
+i!     srcDestDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=5;
+i!         dimA: type=int; val=[1,64,24,512,512];
+i!         strideA: type=int; val=[402653184,6291456,262144,512,1];
+i!     srcDestData: location=dev; addr=0x7fab50000000;
+i! Time: 2020-05-18T12:45:27.942683 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=0; Handle=0x5647299ed0f0; StreamId=(nil) (defaultStream).
+
+
+I! CuDNN (v7603) function cudnnDestroyTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942721 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnDestroyTensorDescriptor() called:
+i! Time: 2020-05-18T12:45:27.942729 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7603) function cudnnDestroy() called:
+i! Time: 2020-05-18T12:45:27.993942 (0d+0h+0m+3s since start)
+i! Process=13869; Thread=13869; GPU=NULL; Handle=NULL; StreamId=NULL.
+
