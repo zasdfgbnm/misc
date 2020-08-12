@@ -10,9 +10,6 @@ constexpr c10::complex<scalar_t> m(scalar_t real, scalar_t imag, c10::complex<rh
 template<typename scalar_t>
 C10_HOST_DEVICE void test_arithmetic_assign_complex() {
   using namespace c10::complex_literals;
-  constexpr c10::complex<scalar_t> y2 = m(scalar_t(2), scalar_t(2), 1.0_if);
-  static_assert(y2.real() == scalar_t(2), "");
-  static_assert(y2.imag() == scalar_t(1), "");
   constexpr c10::complex<scalar_t> y3 = m(scalar_t(2), scalar_t(2), 1.0_id);
   static_assert(y3.real() == scalar_t(2), "");
 #if !defined(__CUDACC__)
