@@ -3,3 +3,5 @@ a.out
 .vscode
 __pycache__
 .mypy_cache
+/test
+*.pt
