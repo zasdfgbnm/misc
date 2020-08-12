@@ -15,17 +15,6 @@ struct alignas(sizeof(T) * 2) complex {
 
   constexpr complex() = default;
   constexpr complex(const T& re, const T& im = T()): real_(re), imag_(im) {}
-  template<typename U>
-  explicit constexpr complex(const std::complex<U> &other): complex(other.real(), other.imag()) {}
-
-
-  // Use SFINAE to specialize casting constructor for c10::complex<float> and c10::complex<double>
-  template<typename U = T>
-  explicit constexpr complex(const std::enable_if_t<std::is_same<U, float>::value, complex<double>> &other):
-    real_(other.real_), imag_(other.imag_) {}
-  template<typename U = T>
-  constexpr complex(const std::enable_if_t<std::is_same<U, double>::value, complex<float>> &other):
-    real_(other.real_), imag_(other.imag_) {}
 
   template<typename U>
   constexpr complex<T> &operator =(const complex<U> &rhs) {

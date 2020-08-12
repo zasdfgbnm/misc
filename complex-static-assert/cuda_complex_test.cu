@@ -20,7 +20,6 @@ C10_HOST_DEVICE void test_arithmetic_assign_complex() {
 
 __global__ void test_arithmetic_assign() {
   test_arithmetic_assign_complex<float>();
-  test_arithmetic_assign_complex<double>();
 }
 
 int main() {}
