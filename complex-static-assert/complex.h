@@ -27,34 +27,6 @@ struct alignas(sizeof(T) * 2) complex {
   constexpr complex(const std::enable_if_t<std::is_same<U, double>::value, complex<float>> &other):
     real_(other.real_), imag_(other.imag_) {}
 
-  constexpr complex<T> &operator =(T re) {
-    real_ = re;
-    imag_ = 0;
-    return *this;
-  }
-
-  constexpr complex<T> &operator +=(T re) {
-    real_ += re;
-    return *this;
-  }
-
-  constexpr complex<T> &operator -=(T re) {
-    real_ -= re;
-    return *this;
-  }
-
-  constexpr complex<T> &operator *=(T re) {
-    real_ *= re;
-    imag_ *= re;
-    return *this;
-  }
-
-  constexpr complex<T> &operator /=(T re) {
-    real_ /= re;
-    imag_ /= re;
-    return *this;
-  }
-
   template<typename U>
   constexpr complex<T> &operator =(const complex<U> &rhs) {
     real_ = rhs.real();
@@ -63,42 +35,10 @@ struct alignas(sizeof(T) * 2) complex {
   }
 
   template<typename U>
-  constexpr complex<T> &operator +=(const complex<U> &rhs) {
-    real_ += rhs.real();
-    imag_ += rhs.imag();
-    return *this;
-  }
-
-  template<typename U>
   constexpr complex<T> &operator -=(const complex<U> &rhs) {
     real_ -= rhs.real();
     imag_ -= rhs.imag();
     return *this;
-  }
-
-  template<typename U>
-  constexpr complex<T> &operator *=(const complex<U> &rhs) {
-    // (a + bi) * (c + di) = (a*c - b*d) + (a * d + b * c) i
-    T a = real_;
-    T b = imag_;
-    U c = rhs.real();
-    U d = rhs.imag();
-    real_ = a * c - b * d;
-    imag_ = a * d + b * c;
-    return *this;
-  }
-
-
-  template<typename U>
-  constexpr complex<T> &operator =(const std::complex<U> &rhs) {
-    real_ = rhs.real();
-    imag_ = rhs.imag();
-    return *this;
-  }
-
-  template<typename U>
-  explicit constexpr operator std::complex<U>() const {
-    return std::complex<U>(std::complex<T>(real(), imag()));
   }
 
   constexpr T real() const {
