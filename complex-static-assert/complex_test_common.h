@@ -2,15 +2,12 @@
 #include <tuple>
 #include <sstream>
 #include "complex.h"
-#include "Macros.h"
 
 #if (defined(__CUDACC__) || defined(__HIPCC__))
 #define MAYBE_GLOBAL __global__
 #else
 #define MAYBE_GLOBAL
 #endif
-
-#define PI 3.141592653589793238463
 
 template<typename scalar_t, typename rhs_t>
 constexpr c10::complex<scalar_t> p(scalar_t real, scalar_t imag, c10::complex<rhs_t> rhs) {

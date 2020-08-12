@@ -559,10 +559,3 @@ C10_HOST_DEVICE complex<T> polar(const T& r, const T& theta = T()) {
 }
 
 } // namespace c10
-
-#define C10_INTERNAL_INCLUDE_COMPLEX_REMAINING_H
-// math functions are included in a separate file
-#include "complex_math.h"
-// utilities for complex types
-#include "complex_utils.h"
-#undef C10_INTERNAL_INCLUDE_COMPLEX_REMAINING_H
