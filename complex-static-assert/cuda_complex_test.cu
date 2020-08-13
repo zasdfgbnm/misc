@@ -9,17 +9,9 @@ struct alignas(sizeof(T) * 2) complex {
 
   template<typename U>
   constexpr complex<T> &operator -=(const complex<U> &rhs) {
-    real_ -= rhs.real();
-    imag_ -= rhs.imag();
+    real_ -= rhs.real_;
+    imag_ -= rhs.imag_;
     return *this;
-  }
-
-  constexpr T real() const {
-    return real_;
-  }
-
-  constexpr T imag() const {
-    return imag_;
   }
 };
 
@@ -32,7 +24,7 @@ constexpr complex<scalar_t> m(scalar_t real, scalar_t imag, complex<rhs_t> rhs) 
 
 __global__ void test_arithmetic_assign() {
   constexpr complex<float> y3 = m(float(2), float(2), complex<double>(0.0, 1.0));
-  static_assert(y3.real() == float(2), "");
+  static_assert(y3.real_ == float(2), "");
 }
 
 int main() {}
