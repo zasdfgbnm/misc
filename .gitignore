@@ -8,3 +8,6 @@ __pycache__
 *.exe
 *.exp
 *.lib
+*.qdrep
+*.sqlite
+/cudnn1111
