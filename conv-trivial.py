@@ -3,7 +3,7 @@ import torch
 c = torch.nn.Conv2d(1,1,1, bias=False).cuda()
 i = torch.randn(1, 1, 1, 1).cuda()
 o = c(i)
-print(c.weight * i)
+print((c.weight * i).item(), o.item())
 o_cpu = c.cpu()(i.cpu())
 print((o.cpu() - o_cpu).abs().max())
 print(torch.stack([o.cpu().flatten(), o_cpu.flatten()]).t())
