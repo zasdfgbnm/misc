@@ -61,8 +61,8 @@ int main() {
         .setyDesc(getTensorDescriptor('y'))
         .setwDesc(getTensorDescriptor('w'))
         .setcDesc(conv_descriptor)
-        .setAlpha(1.0f)
-        .setBeta(0.0f)
+        .setAlpha(1.0)
+        .setBeta(0.0)
         .build();
     std::cout << op.describe() << std::endl;
 
