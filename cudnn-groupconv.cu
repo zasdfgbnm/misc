@@ -2,13 +2,17 @@
 #include <iostream>
 #include <cudnn_frontend.h>
 
-float x[1] = {0.12f};
-float w[1] = {3.4f};
-float y[1] = {0.99f};
-float workspace[100000000];
+int64_t ones[5] = {1, 1, 1, 1, 1};
+int64_t zeros[5] = {0, 0, 0, 0, 0};
 
-int64_t ones[4] = {1, 1, 1, 1};
-int64_t zeros[4] = {0, 0, 0, 0};
+int64_t input_shape[5] = {2, 2, 2, 6, 6};
+int64_t input_stride[5] = {144, 72, 36, 6, 1};
+
+int64_t output_shape[5] = {2, 2, 2, 4, 4};
+int64_t output_stride[5] = {64, 32, 16, 4, 1};
+
+int64_t filter_shape[5] = {2, 2, 2, 3, 3};
+int64_t filter_stride[5] = {36, 18, 9, 3, 1};
 
 void checkCudnnErr(cudnnStatus_t code) {
     if (code) {
@@ -16,36 +20,33 @@ void checkCudnnErr(cudnnStatus_t code) {
     }
 }
 
-cudnn_frontend::Tensor getTensorDescriptor(int64_t id) {
-    auto tensor = cudnn_frontend::TensorBuilder()
-    .setDim(4, ones)
-    .setStrides(4, ones)
-    .setId(id)
-    .setAlignment(4)
-    .setDataType(CUDNN_DATA_FLOAT)
-    .build();
-    std::cout << tensor.describe() << std::endl;
-    return tensor;
-}
-
 int main() {
     cudnnHandle_t handle; checkCudnnErr(cudnnCreate(&handle));
-
-    try {
     uint64_t convDim = 2;
-    float* devPtrX = NULL;
-    float* devPtrW = NULL;
-    float* devPtrY = NULL;
 
-    cudaMalloc((void**)&(devPtrX), sizeof(float));
-    cudaMalloc((void**)&(devPtrW), sizeof(float));
-    cudaMalloc((void**)&(devPtrY), sizeof(float));
-    cudaMemcpy(devPtrX, x, sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(devPtrW, w, sizeof(float), cudaMemcpyHostToDevice);
-    cudaDeviceSynchronize();
-
+    auto x = cudnn_frontend::TensorBuilder()
+        .setDim(5, input_shape)
+        .setStrides(5, input_stride)
+        .setId('x')
+        .setAlignment(4)
+        .setDataType(CUDNN_DATA_HALF)
+        .build();
+    auto y = cudnn_frontend::TensorBuilder()
+        .setDim(5, output_shape)
+        .setStrides(5, output_stride)
+        .setId('y')
+        .setAlignment(4)
+        .setDataType(CUDNN_DATA_HALF)
+        .build();
+    auto w = cudnn_frontend::TensorBuilder()
+        .setDim(5, filter_shape)
+        .setStrides(5, filter_stride)
+        .setId('w')
+        .setAlignment(4)
+        .setDataType(CUDNN_DATA_HALF)
+        .build();
     auto conv_descriptor = cudnn_frontend::ConvDescBuilder()
-        .setDataType(CUDNN_DATA_FLOAT)
+        .setDataType(CUDNN_DATA_HALF)
         .setMathMode(CUDNN_CROSS_CORRELATION)
         .setNDims(convDim)
         .setStrides(convDim, ones)
@@ -57,12 +58,12 @@ int main() {
 
     auto op = cudnn_frontend::OperationBuilder()
         .setOpMode(CUDNN_BACKEND_OPERATION_CONVOLUTION_FORWARD_DESCRIPTOR)
-        .setxDesc(getTensorDescriptor('x'))
-        .setyDesc(getTensorDescriptor('y'))
-        .setwDesc(getTensorDescriptor('w'))
+        .setxDesc(x)
+        .setyDesc(y)
+        .setwDesc(w)
         .setcDesc(conv_descriptor)
-        .setAlpha(1.0)
-        .setBeta(0.0)
+        .setAlpha(1.0f)
+        .setBeta(0.0f)
         .build();
     std::cout << op.describe() << std::endl;
 
@@ -84,25 +85,4 @@ int main() {
         .setHandle(handle)
         .setEngineConfig(engine_config[0])
         .build();
-
-    void * data_ptrs[] = {devPtrX, devPtrY, devPtrW};
-    int64_t uids[] = {'x', 'y', 'w'};
-    void * workspace_ptr;
-    cudaMalloc(&workspace_ptr, 100000);
-    auto variantPack = cudnn_frontend::VariantPackBuilder()
-        .setWorkspacePointer(workspace_ptr)
-        .setDataPointers(3, data_ptrs)
-        .setUids(3, uids)
-        .build();
-
-    checkCudnnErr(cudnnBackendExecute(handle, plan.get_raw_desc(), variantPack.get_raw_desc()));
-    cudaDeviceSynchronize();
-    cudaMemcpy(y, devPtrY, sizeof(float), cudaMemcpyDeviceToHost);
-    cudaDeviceSynchronize();
-
-    std::cout << "expect: " << x[0] * w[0] << std::endl
-            << "get: " << y[0] << std::endl;
-    } catch (cudnn_frontend::cudnnException e) {
-        std::cout << "[ERROR] Exception " << e.what() << std::endl;
-    }
 }
