@@ -24,29 +24,32 @@ int main() {
     cudnnHandle_t handle; checkCudnnErr(cudnnCreate(&handle));
     uint64_t convDim = 2;
 
+    // auto type = CUDNN_DATA_FLOAT;
+    auto type = CUDNN_DATA_HALF;
+
     auto x = cudnn_frontend::TensorBuilder()
         .setDim(5, input_shape)
         .setStrides(5, input_stride)
         .setId('x')
         .setAlignment(4)
-        .setDataType(CUDNN_DATA_HALF)
+        .setDataType(type)
         .build();
     auto y = cudnn_frontend::TensorBuilder()
         .setDim(5, output_shape)
         .setStrides(5, output_stride)
         .setId('y')
         .setAlignment(4)
-        .setDataType(CUDNN_DATA_HALF)
+        .setDataType(type)
         .build();
     auto w = cudnn_frontend::TensorBuilder()
         .setDim(5, filter_shape)
         .setStrides(5, filter_stride)
         .setId('w')
         .setAlignment(4)
-        .setDataType(CUDNN_DATA_HALF)
+        .setDataType(type)
         .build();
     auto conv_descriptor = cudnn_frontend::ConvDescBuilder()
-        .setDataType(CUDNN_DATA_HALF)
+        .setDataType(type)
         .setMathMode(CUDNN_CROSS_CORRELATION)
         .setNDims(convDim)
         .setStrides(convDim, ones)
@@ -78,11 +81,28 @@ int main() {
         .setOperationGraph(opGraph)
         .setHeurMode(CUDNN_HEUR_MODE_INSTANT)
         .build();
+    auto fallback = cudnn_frontend::EngineFallbackListBuilder()
+        .setOperationGraph(opGraph)
+        .setOperation(CUDNN_BACKEND_OPERATION_CONVOLUTION_FORWARD_DESCRIPTOR)
+        .build();
 
     auto &engine_config = heuristics.getEngineConfig();
+    auto &fallback_list = fallback.getFallbackList();
 
-    auto plan = cudnn_frontend::ExecutionPlanBuilder()
-        .setHandle(handle)
-        .setEngineConfig(engine_config[0])
-        .build();
+    std::cout << "Heuristic has " << heuristics.getEngineConfigCount() << " configurations " << std::endl;
+    std::cout << "Fallback List has " << fallback_list.size() << " configurations " << std::endl;
+
+    for (auto cfg_list : {&engine_config, &fallback_list}) {
+        for (auto &cfg : *cfg_list) {
+            try {
+                auto plan = cudnn_frontend::ExecutionPlanBuilder()
+                    .setHandle(handle)
+                    .setEngineConfig(cfg)
+                    .build();
+                return 0;
+            } catch (cudnn_frontend::cudnnException) {}
+        }
+    }
+    std::cerr << "No engine found to do this computation" << std::endl;
+    throw std::runtime_error("No engine found to do this computation");
 }
