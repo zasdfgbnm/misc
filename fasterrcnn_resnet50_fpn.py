@@ -2,7 +2,7 @@ import torch
 import torchvision
 from skimage import io
 
-img = io.imread('300x300.jpg')
+img = io.imread('300x300-horse.jpg')
 
 transformations = torchvision.transforms.Compose([
     torchvision.transforms.ToTensor(),
@@ -15,7 +15,7 @@ t_img = transformations(img)
 
 torch.manual_seed(0)
 
-model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=50, pretrained_backbone=True)
+model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=50, pretrained_backbone=False)
 model.eval()
 # input_shape = (3, 300, 300)
 # x = torch.rand(input_shape)

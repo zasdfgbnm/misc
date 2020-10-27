@@ -1,33 +1,24 @@
 #include <stdexcept>
 #include <iostream>
 #include <cudnn_frontend.h>
-
 int64_t ones[5] = {1, 1, 1, 1, 1};
 int64_t zeros[5] = {0, 0, 0, 0, 0};
-
 int64_t input_shape[5] = {2, 2, 2, 6, 6};
 int64_t input_stride[5] = {144, 72, 36, 6, 1};
-
 int64_t output_shape[5] = {2, 2, 2, 4, 4};
 int64_t output_stride[5] = {64, 32, 16, 4, 1};
-
 int64_t filter_shape[5] = {2, 2, 2, 3, 3};
 int64_t filter_stride[5] = {36, 18, 9, 3, 1};
-
 void checkCudnnErr(cudnnStatus_t code) {
     if (code) {
         throw std::runtime_error("error");
     }
 }
-
 int main() {
     cudnnHandle_t handle; checkCudnnErr(cudnnCreate(&handle));
     uint64_t convDim = 2;
-
     // auto type = CUDNN_DATA_FLOAT;
-    // auto type = CUDNN_DATA_HALF;
-    auto type = CUDNN_DATA_DOUBLE;
-
+    auto type = CUDNN_DATA_HALF;
     auto x = cudnn_frontend::TensorBuilder()
         .setDim(5, input_shape)
         .setStrides(5, input_stride)
@@ -59,7 +50,6 @@ int main() {
         .setDilation(convDim, ones)
         .build();
     std::cout << conv_descriptor.describe() << std::endl;
-
     auto op = cudnn_frontend::OperationBuilder()
         .setOpMode(CUDNN_BACKEND_OPERATION_CONVOLUTION_FORWARD_DESCRIPTOR)
         .setxDesc(x)
@@ -70,30 +60,22 @@ int main() {
         .setBeta(0.0f)
         .build();
     std::cout << op.describe() << std::endl;
-
     std::array<cudnn_frontend::Operation const *, 1> ops = {&op};
-
     auto opGraph = cudnn_frontend::OperationGraphBuilder()
         .setHandle(handle)
         .setOperationGraph(1, ops.data())
         .build();
-
     auto heuristics = cudnn_frontend::EngineHeuristicsBuilder()
         .setOperationGraph(opGraph)
         .setHeurMode(CUDNN_HEUR_MODE_INSTANT)
         .build();
-    // auto fallback = cudnn_frontend::EngineFallbackListBuilder()
-    //     .setOperationGraph(opGraph)
-    //     .setOperation(CUDNN_BACKEND_OPERATION_CONVOLUTION_FORWARD_DESCRIPTOR)
-    //     .build();
-
-    auto &engine_config = heuristics.getEngineConfig(1000);
-    // auto &fallback_list = fallback.getFallbackList();
-
-    std::cout << "Heuristic has " << heuristics.getEngineConfigCount() << " configurations " << std::endl;
-    // std::cout << "Fallback List has " << fallback_list.size() << " configurations " << std::endl;
-
-    for (auto cfg_list : {&engine_config, /*&fallback_list*/}) {
+    auto fallback = cudnn_frontend::EngineFallbackListBuilder()
+        .setOperationGraph(opGraph)
+        .setOperation(CUDNN_BACKEND_OPERATION_CONVOLUTION_FORWARD_DESCRIPTOR)
+        .build();
+    auto &engine_config = heuristics.getEngineConfig();
+    auto &fallback_list = fallback.getFallbackList();
+    for (auto cfg_list : {&engine_config, &fallback_list}) {
         for (auto &cfg : *cfg_list) {
             try {
                 auto plan = cudnn_frontend::ExecutionPlanBuilder()
