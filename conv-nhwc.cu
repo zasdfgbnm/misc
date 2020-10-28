@@ -77,11 +77,33 @@ __global__ void assertEqual(
     }
 }
 
+__device__ float to3(float r01) {
+    if (r01 < 1.0 / 7) {
+        return -3;
+    }
+    if (r01 < 2.0 / 7) {
+        return -2;
+    }
+    if (r01 < 3.0 / 7) {
+        return -1;
+    }
+    if (r01 < 4.0 / 7) {
+        return -0;
+    }
+    if (r01 < 5.0 / 7) {
+        return 1;
+    }
+    if (r01 < 6.0 / 7) {
+        return 2;
+    }
+    return 3;
+}
+
 __global__ void initialize(int64_t size, float *ptr) {
     curandStatePhilox4_32_10_t state;
     curand_init(0, 0, 0, &state);
     for (int64_t i = 0; i < size; i++) {
-        ptr[i] = curand_uniform(&state);
+        ptr[i] = to3(curand_uniform(&state));
     }
 }
 
@@ -155,7 +177,7 @@ void compute(
         .setHeurMode(CUDNN_HEUR_MODE_INSTANT)
         .build();
 
-    auto &engine_config = heuristics.getEngineConfig();
+    auto &engine_config = heuristics.getEngineConfig(100000);
 
     auto plan = cudnn_frontend::ExecutionPlanBuilder()
         .setHandle(handle)
