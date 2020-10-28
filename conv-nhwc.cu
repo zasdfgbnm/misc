@@ -22,20 +22,28 @@ struct array4 {
     }
 };
 
-array4 input_sizes = { 2, 8, 4, 4 };
-int64_t input_numel = input_sizes[0] * input_sizes[1] * input_sizes[2] * input_sizes[3];
-array4 input_strides_nchw = { input_sizes[1] * input_sizes[2] * input_sizes[3], input_sizes[2] * input_sizes[3], input_sizes[3], 1 };
-array4 input_strides_nhwc = { input_sizes[1] * input_sizes[2] * input_sizes[3], 1, input_sizes[1] * input_sizes[3], input_sizes[1] };
+int64_t N = 4;
+int64_t C = 2;
+int64_t H = 8;
+int64_t W = 8;
+int64_t K = 4;
+int64_t R = 2;
+int64_t S = 2;
 
-array4 output_sizes = { 2, 4, 2, 2 };
+array4 input_sizes = { N, C, H, W };
+int64_t input_numel = N * C * H * W;
+array4 input_strides_nchw = { C * H * W, H * W, W, 1 };
+array4 input_strides_nhwc = { C * H * W, 1, C * W, C };
+
+array4 filter_sizes = { K, C, R, S };
+int64_t filter_numel = K * C * R * S;
+array4 filter_strides_nchw = { C * R * S, R * S, S, 1 };
+array4 filter_strides_nhwc = { C * R * S, 1, C * S, C };
+
+array4 output_sizes = { N, K, H - R + 1, W - S + 1 };
 int64_t output_numel = output_sizes[0] * output_sizes[1] * output_sizes[2] * output_sizes[3];
 array4 output_strides_nchw = { output_sizes[1] * output_sizes[2] * output_sizes[3], output_sizes[2] * output_sizes[3], output_sizes[3], 1 };
 array4 output_strides_nhwc = { output_sizes[1] * output_sizes[2] * output_sizes[3], 1, output_sizes[1] * output_sizes[3], output_sizes[1] };
-
-array4 filter_sizes = { 4, 8, 3, 3 };
-int64_t filter_numel = filter_sizes[0] * filter_sizes[1] * filter_sizes[2] * filter_sizes[3];
-array4 filter_strides_nchw = { filter_sizes[1] * filter_sizes[2] * filter_sizes[3], filter_sizes[2] * filter_sizes[3], filter_sizes[3], 1 };
-array4 filter_strides_nhwc = { filter_sizes[1] * filter_sizes[2] * filter_sizes[3], 1, filter_sizes[1] * filter_sizes[3], filter_sizes[1] };
 
 int64_t ones[5] = {1, 1, 1, 1, 1};
 int64_t zeros[5] = {0, 0, 0, 0, 0};
@@ -75,7 +83,7 @@ __global__ void assertEqual(
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
                     scalar_t diff = std::abs(destPtr[destOffset] - srcPtr[srcOffset]);
-                    printf("%f\n", diff);
+                    // printf("%f\n", diff);
                     assert(diff < 1e-3);
                 }
             }
@@ -163,23 +171,29 @@ void compute(
 
     auto &engine_config = heuristics.getEngineConfig(100000);
 
-    auto plan = cudnn_frontend::ExecutionPlanBuilder()
-        .setHandle(handle)
-        .setEngineConfig(engine_config[0])
-        .build();
-
-    void * data_ptrs[] = {devPtrX, devPtrY, devPtrW};
-    int64_t uids[] = {'x', 'y', 'w'};
     void * workspace_ptr;
     cudaMalloc(&workspace_ptr, 100000);
-    auto variantPack = cudnn_frontend::VariantPackBuilder()
-        .setWorkspacePointer(workspace_ptr)
-        .setDataPointers(3, data_ptrs)
-        .setUids(3, uids)
-        .build();
 
-    checkCudnnErr(cudnnBackendExecute(handle, plan.get_raw_desc(), variantPack.get_raw_desc()));
-    cudaDeviceSynchronize();
+    for (auto &cfg : engine_config) {
+        try {
+            auto plan = cudnn_frontend::ExecutionPlanBuilder()
+                .setHandle(handle)
+                .setEngineConfig(cfg)
+                .build();
+
+            void * data_ptrs[] = {devPtrX, devPtrY, devPtrW};
+            int64_t uids[] = {'x', 'y', 'w'};
+            auto variantPack = cudnn_frontend::VariantPackBuilder()
+                .setWorkspacePointer(workspace_ptr)
+                .setDataPointers(3, data_ptrs)
+                .setUids(3, uids)
+                .build();
+
+            checkCudnnErr(cudnnBackendExecute(handle, plan.get_raw_desc(), variantPack.get_raw_desc()));
+            cudaDeviceSynchronize();
+        } catch(...) {}
+    }
+    throw "no algo found";
 }
 
 int main() {
