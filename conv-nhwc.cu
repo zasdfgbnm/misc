@@ -61,7 +61,6 @@ __global__ void transpose(
                 for (int64_t l = 0; l < sizes[3]; l++) {
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
-                    printf("%ld, %ld, %ld, %ld, %ld, %ld, %f\n", i, j, k, l, srcOffset, destOffset, (float)srcPtr[srcOffset]);
                     destPtr[destOffset] = srcPtr[srcOffset];
                 }
             }
@@ -83,7 +82,7 @@ __global__ void assertEqual(
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
                     scalar_t diff = std::abs(destPtr[destOffset] - srcPtr[srcOffset]);
-                    // printf("%f\n", diff);
+                    printf("%f\n", (float)diff);
                     assert(diff < 1e-3);
                 }
             }
@@ -191,6 +190,7 @@ void compute(
 
             checkCudnnErr(cudnnBackendExecute(handle, plan.get_raw_desc(), variantPack.get_raw_desc()));
             cudaDeviceSynchronize();
+            return;
         } catch(...) {}
     }
     throw "no algo found";
