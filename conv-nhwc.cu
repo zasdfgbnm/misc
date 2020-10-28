@@ -6,6 +6,12 @@
 #include <curand_kernel.h>
 #include <assert.h>
 
+// using scalar_t = float;
+// auto type = CUDNN_DATA_FLOAT;
+
+using scalar_t = double;
+auto type = CUDNN_DATA_DOUBLE;
+
 struct array4 {
     int64_t data_[4];
     __device__ __host__ int64_t &operator[](int64_t i) {
@@ -36,9 +42,9 @@ int64_t zeros[5] = {0, 0, 0, 0, 0};
 
 __global__ void transpose(
     array4 sizes,
-    float *destPtr,
+    scalar_t *destPtr,
     array4 destStrides,
-    float *srcPtr,
+    scalar_t *srcPtr,
     array4 srcStrides
 ) {
     for (int64_t i = 0; i < sizes[0]; i++) {
@@ -47,7 +53,7 @@ __global__ void transpose(
                 for (int64_t l = 0; l < sizes[3]; l++) {
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
-                    // printf("%ld, %ld, %ld, %ld, %ld, %ld, %f\n", i, j, k, l, srcOffset, destOffset, srcPtr[srcOffset]);
+                    printf("%ld, %ld, %ld, %ld, %ld, %ld, %f\n", i, j, k, l, srcOffset, destOffset, (float)srcPtr[srcOffset]);
                     destPtr[destOffset] = srcPtr[srcOffset];
                 }
             }
@@ -57,9 +63,9 @@ __global__ void transpose(
 
 __global__ void assertEqual(
     array4 sizes,
-    float *destPtr,
+    scalar_t *destPtr,
     array4 destStrides,
-    float *srcPtr,
+    scalar_t *srcPtr,
     array4 srcStrides
 ) {
     for (int64_t i = 0; i < sizes[0]; i++) {
@@ -68,7 +74,7 @@ __global__ void assertEqual(
                 for (int64_t l = 0; l < sizes[3]; l++) {
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
-                    float diff = std::abs(destPtr[destOffset] - srcPtr[srcOffset]);
+                    scalar_t diff = std::abs(destPtr[destOffset] - srcPtr[srcOffset]);
                     printf("%f\n", diff);
                     assert(diff < 1e-3);
                 }
@@ -77,33 +83,11 @@ __global__ void assertEqual(
     }
 }
 
-__device__ float to3(float r01) {
-    if (r01 < 1.0 / 7) {
-        return -3;
-    }
-    if (r01 < 2.0 / 7) {
-        return -2;
-    }
-    if (r01 < 3.0 / 7) {
-        return -1;
-    }
-    if (r01 < 4.0 / 7) {
-        return -0;
-    }
-    if (r01 < 5.0 / 7) {
-        return 1;
-    }
-    if (r01 < 6.0 / 7) {
-        return 2;
-    }
-    return 3;
-}
-
-__global__ void initialize(int64_t size, float *ptr) {
+__global__ void initialize(int64_t size, scalar_t *ptr) {
     curandStatePhilox4_32_10_t state;
     curand_init(0, 0, 0, &state);
     for (int64_t i = 0; i < size; i++) {
-        ptr[i] = to3(curand_uniform(&state));
+        ptr[i] = curand_uniform(&state);
     }
 }
 
@@ -123,20 +107,20 @@ cudnn_frontend::Tensor getTensorDescriptor(
         .setStrides(4, strides.data())
         .setId(id)
         .setAlignment(8)
-        .setDataType(CUDNN_DATA_FLOAT)
+        .setDataType(type)
         .build();
     std::cout << tensor.describe() << std::endl;
     return tensor;
 }
 
 void compute(
-    float* devPtrX,
+    scalar_t* devPtrX,
     array4 sizesX,
     array4 stridesX,
-    float* devPtrW,
+    scalar_t* devPtrW,
     array4 sizesW,
     array4 stridesW,
-    float* devPtrY,
+    scalar_t* devPtrY,
     array4 sizesY,
     array4 stridesY
 ) {
@@ -144,7 +128,7 @@ void compute(
     uint64_t convDim = 2;
     cudnnHandle_t handle; checkCudnnErr(cudnnCreate(&handle));
     auto conv_descriptor = cudnn_frontend::ConvDescBuilder()
-        .setDataType(CUDNN_DATA_FLOAT)
+        .setDataType(type)
         .setMathMode(CUDNN_CROSS_CORRELATION)
         .setNDims(convDim)
         .setStrides(convDim, ones)
@@ -199,18 +183,18 @@ void compute(
 }
 
 int main() {
-    float* nchwPtrX = NULL;
-    float* nchwPtrW = NULL;
-    float* nchwPtrY = NULL;
-    float* nhwcPtrX = NULL;
-    float* nhwcPtrW = NULL;
-    float* nhwcPtrY = NULL;
-    cudaMalloc((void**)&(nchwPtrX), sizeof(float) * input_numel);
-    cudaMalloc((void**)&(nchwPtrW), sizeof(float) * filter_numel);
-    cudaMalloc((void**)&(nchwPtrY), sizeof(float) * output_numel);
-    cudaMalloc((void**)&(nhwcPtrX), sizeof(float) * input_numel);
-    cudaMalloc((void**)&(nhwcPtrW), sizeof(float) * filter_numel);
-    cudaMalloc((void**)&(nhwcPtrY), sizeof(float) * output_numel);
+    scalar_t* nchwPtrX = NULL;
+    scalar_t* nchwPtrW = NULL;
+    scalar_t* nchwPtrY = NULL;
+    scalar_t* nhwcPtrX = NULL;
+    scalar_t* nhwcPtrW = NULL;
+    scalar_t* nhwcPtrY = NULL;
+    cudaMalloc((void**)&(nchwPtrX), sizeof(scalar_t) * input_numel);
+    cudaMalloc((void**)&(nchwPtrW), sizeof(scalar_t) * filter_numel);
+    cudaMalloc((void**)&(nchwPtrY), sizeof(scalar_t) * output_numel);
+    cudaMalloc((void**)&(nhwcPtrX), sizeof(scalar_t) * input_numel);
+    cudaMalloc((void**)&(nhwcPtrW), sizeof(scalar_t) * filter_numel);
+    cudaMalloc((void**)&(nhwcPtrY), sizeof(scalar_t) * output_numel);
     cudaDeviceSynchronize();
 
     initialize<<<1,1>>>(input_numel, nchwPtrX);
