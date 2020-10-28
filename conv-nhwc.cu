@@ -24,18 +24,18 @@ struct array4 {
 
 array4 input_sizes = { 2, 8, 4, 4 };
 int64_t input_numel = input_sizes[0] * input_sizes[1] * input_sizes[2] * input_sizes[3];
-array4 input_strides_nchw = { 128, 16, 4, 1 };
-array4 input_strides_nhwc = { 128, 1, 32, 8 };
+array4 input_strides_nchw = { input_sizes[1] * input_sizes[2] * input_sizes[3], input_sizes[2] * input_sizes[3], input_sizes[3], 1 };
+array4 input_strides_nhwc = { input_sizes[1] * input_sizes[2] * input_sizes[3], 1, input_sizes[1] * input_sizes[3], input_sizes[1] };
 
 array4 output_sizes = { 2, 4, 2, 2 };
 int64_t output_numel = output_sizes[0] * output_sizes[1] * output_sizes[2] * output_sizes[3];
-array4 output_strides_nchw = { 16, 4, 2, 1 };
-array4 output_strides_nhwc = { 16, 1, 8, 4 };
+array4 output_strides_nchw = { output_sizes[1] * output_sizes[2] * output_sizes[3], output_sizes[2] * output_sizes[3], output_sizes[3], 1 };
+array4 output_strides_nhwc = { output_sizes[1] * output_sizes[2] * output_sizes[3], 1, output_sizes[1] * output_sizes[3], output_sizes[1] };
 
 array4 filter_sizes = { 4, 8, 3, 3 };
 int64_t filter_numel = filter_sizes[0] * filter_sizes[1] * filter_sizes[2] * filter_sizes[3];
-array4 filter_strides_nchw = { 72, 9, 3, 1 };
-array4 filter_strides_nhwc = { 72, 1, 24, 8 };
+array4 filter_strides_nchw = { filter_sizes[1] * filter_sizes[2] * filter_sizes[3], filter_sizes[2] * filter_sizes[3], filter_sizes[3], 1 };
+array4 filter_strides_nhwc = { filter_sizes[1] * filter_sizes[2] * filter_sizes[3], 1, filter_sizes[1] * filter_sizes[3], filter_sizes[1] };
 
 int64_t ones[5] = {1, 1, 1, 1, 1};
 int64_t zeros[5] = {0, 0, 0, 0, 0};
