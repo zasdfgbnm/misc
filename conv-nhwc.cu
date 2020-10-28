@@ -82,7 +82,7 @@ __global__ void assertEqual(
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
                     scalar_t diff = std::abs(destPtr[destOffset] - srcPtr[srcOffset]);
-                    printf("%f\n", (float)diff);
+                    // printf("%f\n", (float)diff);
                     assert(diff < 1e-3);
                 }
             }
@@ -197,41 +197,43 @@ void compute(
 }
 
 int main() {
-    scalar_t* nchwPtrX = NULL;
-    scalar_t* nchwPtrW = NULL;
-    scalar_t* nchwPtrY = NULL;
-    scalar_t* nhwcPtrX = NULL;
-    scalar_t* nhwcPtrW = NULL;
-    scalar_t* nhwcPtrY = NULL;
-    cudaMalloc((void**)&(nchwPtrX), sizeof(scalar_t) * input_numel);
-    cudaMalloc((void**)&(nchwPtrW), sizeof(scalar_t) * filter_numel);
-    cudaMalloc((void**)&(nchwPtrY), sizeof(scalar_t) * output_numel);
-    cudaMalloc((void**)&(nhwcPtrX), sizeof(scalar_t) * input_numel);
-    cudaMalloc((void**)&(nhwcPtrW), sizeof(scalar_t) * filter_numel);
-    cudaMalloc((void**)&(nhwcPtrY), sizeof(scalar_t) * output_numel);
-    cudaDeviceSynchronize();
+    for (int i = 0; i < 1; i++) {
+        scalar_t* nchwPtrX = NULL;
+        scalar_t* nchwPtrW = NULL;
+        scalar_t* nchwPtrY = NULL;
+        scalar_t* nhwcPtrX = NULL;
+        scalar_t* nhwcPtrW = NULL;
+        scalar_t* nhwcPtrY = NULL;
+        cudaMalloc((void**)&(nchwPtrX), sizeof(scalar_t) * input_numel);
+        cudaMalloc((void**)&(nchwPtrW), sizeof(scalar_t) * filter_numel);
+        cudaMalloc((void**)&(nchwPtrY), sizeof(scalar_t) * output_numel);
+        cudaMalloc((void**)&(nhwcPtrX), sizeof(scalar_t) * input_numel);
+        cudaMalloc((void**)&(nhwcPtrW), sizeof(scalar_t) * filter_numel);
+        cudaMalloc((void**)&(nhwcPtrY), sizeof(scalar_t) * output_numel);
+        cudaDeviceSynchronize();
 
-    initialize<<<1,1>>>(input_numel, nchwPtrX);
-    initialize<<<1,1>>>(filter_numel, nchwPtrW);
-    cudaDeviceSynchronize();
-    transpose<<<1,1>>>(input_sizes, nhwcPtrX, input_strides_nhwc, nchwPtrX, input_strides_nchw);
-    transpose<<<1,1>>>(filter_sizes, nhwcPtrW, filter_strides_nhwc, nchwPtrW, filter_strides_nchw);
-    assertEqual<<<1,1>>>(input_sizes, nhwcPtrX, input_strides_nhwc, nchwPtrX, input_strides_nchw);
-    assertEqual<<<1,1>>>(filter_sizes, nhwcPtrW, filter_strides_nhwc, nchwPtrW, filter_strides_nchw);
+        initialize<<<1,1>>>(input_numel, nchwPtrX);
+        initialize<<<1,1>>>(filter_numel, nchwPtrW);
+        transpose<<<1,1>>>(input_sizes, nhwcPtrX, input_strides_nhwc, nchwPtrX, input_strides_nchw);
+        transpose<<<1,1>>>(filter_sizes, nhwcPtrW, filter_strides_nhwc, nchwPtrW, filter_strides_nchw);
+        assertEqual<<<1,1>>>(input_sizes, nhwcPtrX, input_strides_nhwc, nchwPtrX, input_strides_nchw);
+        assertEqual<<<1,1>>>(filter_sizes, nhwcPtrW, filter_strides_nhwc, nchwPtrW, filter_strides_nchw);
+        cudaDeviceSynchronize();
+        
+        compute(
+            nhwcPtrX, input_sizes, input_strides_nhwc,
+            nhwcPtrW, filter_sizes, filter_strides_nhwc,
+            nhwcPtrY, output_sizes, output_strides_nhwc
+        );
+        compute(
+            nchwPtrX, input_sizes, input_strides_nchw,
+            nchwPtrW, filter_sizes, filter_strides_nchw,
+            nchwPtrY, output_sizes, output_strides_nchw
+        );
 
-    compute(
-        nhwcPtrX, input_sizes, input_strides_nhwc,
-        nhwcPtrW, filter_sizes, filter_strides_nhwc,
-        nhwcPtrY, output_sizes, output_strides_nhwc
-    );
-    compute(
-        nchwPtrX, input_sizes, input_strides_nchw,
-        nchwPtrW, filter_sizes, filter_strides_nchw,
-        nchwPtrY, output_sizes, output_strides_nchw
-    );
+        assertEqual<<<1,1>>>(output_sizes, nhwcPtrY, output_strides_nhwc, nchwPtrY, output_strides_nchw);
+        cudaDeviceSynchronize();
+    }
 
-    assertEqual<<<1,1>>>(output_sizes, nhwcPtrY, output_strides_nhwc, nchwPtrY, output_strides_nchw);
-
-    cudaDeviceSynchronize();
     std::cout << "match" << std::endl;
 }
