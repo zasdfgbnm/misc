@@ -47,7 +47,7 @@ __global__ void transpose(
                 for (int64_t l = 0; l < sizes[3]; l++) {
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
-                    printf("%ld, %ld, %ld, %ld, %ld, %ld, %f\n", i, j, k, l, srcOffset, destOffset, srcPtr[srcOffset]);
+                    // printf("%ld, %ld, %ld, %ld, %ld, %ld, %f\n", i, j, k, l, srcOffset, destOffset, srcPtr[srcOffset]);
                     destPtr[destOffset] = srcPtr[srcOffset];
                 }
             }
@@ -68,7 +68,9 @@ __global__ void assertEqual(
                 for (int64_t l = 0; l < sizes[3]; l++) {
                     int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
                     int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
-                    assert(destPtr[destOffset] == srcPtr[srcOffset]);
+                    float diff = std::abs(destPtr[destOffset] - srcPtr[srcOffset]);
+                    printf("%f\n", diff);
+                    assert(diff < 1e-3);
                 }
             }
         }
@@ -79,7 +81,7 @@ __global__ void initialize(int64_t size, float *ptr) {
     curandStatePhilox4_32_10_t state;
     curand_init(0, 0, 0, &state);
     for (int64_t i = 0; i < size; i++) {
-        ptr[i] = curand_normal(&state);
+        ptr[i] = curand_uniform(&state);
     }
 }
 
@@ -98,7 +100,7 @@ cudnn_frontend::Tensor getTensorDescriptor(
         .setDim(4, sizes.data())
         .setStrides(4, strides.data())
         .setId(id)
-        .setAlignment(4)
+        .setAlignment(8)
         .setDataType(CUDNN_DATA_FLOAT)
         .build();
     std::cout << tensor.describe() << std::endl;

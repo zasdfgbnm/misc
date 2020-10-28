@@ -78,7 +78,7 @@ __global__ void initialize(int64_t size, float *ptr) {
     curandStatePhilox4_32_10_t state;
     curand_init(0, 0, 0, &state);
     for (int64_t i = 0; i < size; i++) {
-        *ptr = curand_normal(&state);
+        *ptr = curand_uniform(&state);
     }
 }
 __global__ void read(int64_t size, float *ptr) {
