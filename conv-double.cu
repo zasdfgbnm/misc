@@ -6,83 +6,40 @@
 #include <curand_kernel.h>
 #include <assert.h>
 
-using scalar_t = float;
-auto type = CUDNN_DATA_FLOAT;
+// using scalar_t = float;
+// auto type = CUDNN_DATA_FLOAT;
 
 // using scalar_t = double;
-// auto type = CUDNN_DATA_DOUBLE;
+auto type = CUDNN_DATA_DOUBLE;
 
-struct array4 {
-    int64_t data_[4];
-    __device__ __host__ int64_t &operator[](int64_t i) {
-        return data_[i];
-    }
-    int64_t *data() {
-        return data_;
-    }
-};
+int64_t input_numel = 2 * 8 * 4 * 4;
+std::array<int64_t, 4> input_sizes = { 2, 8, 4, 4 };
+std::array<int64_t, 4> input_strides = { 128, 16, 4, 1 };
 
-array4 input_sizes = { 2, 8, 4, 4 };
-int64_t input_numel = input_sizes[0] * input_sizes[1] * input_sizes[2] * input_sizes[3];
-array4 input_strides_nchw = { 128, 16, 4, 1 };
-array4 input_strides_nhwc = { 128, 1, 32, 8 };
+int64_t output_numel = 2 * 4 * 2 * 2;
+std::array<int64_t, 4> output_sizes = { 2, 4, 2, 2 };
+std::array<int64_t, 4> output_strides = { 16, 4, 2, 1 };
 
-array4 output_sizes = { 2, 4, 2, 2 };
-int64_t output_numel = output_sizes[0] * output_sizes[1] * output_sizes[2] * output_sizes[3];
-array4 output_strides_nchw = { 16, 4, 2, 1 };
-array4 output_strides_nhwc = { 16, 1, 8, 4 };
-
-array4 filter_sizes = { 4, 8, 3, 3 };
-int64_t filter_numel = filter_sizes[0] * filter_sizes[1] * filter_sizes[2] * filter_sizes[3];
-array4 filter_strides_nchw = { 72, 9, 3, 1 };
-array4 filter_strides_nhwc = { 72, 1, 24, 8 };
+int64_t filter_numel = 4 * 8 * 3 * 3;
+std::array<int64_t, 4> filter_sizes = { 4, 8, 3, 3 };
+std::array<int64_t, 4> filter_strides = { 72, 9, 3, 1 };
 
 int64_t ones[5] = {1, 1, 1, 1, 1};
 int64_t zeros[5] = {0, 0, 0, 0, 0};
 
-__global__ void transpose(
-    array4 sizes,
-    scalar_t *destPtr,
-    array4 destStrides,
-    scalar_t *srcPtr,
-    array4 srcStrides
-) {
-    for (int64_t i = 0; i < sizes[0]; i++) {
-        for (int64_t j = 0; j < sizes[1]; j++) {
-            for (int64_t k = 0; k < sizes[2]; k++) {
-                for (int64_t l = 0; l < sizes[3]; l++) {
-                    int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
-                    int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
-                    printf("%ld, %ld, %ld, %ld, %ld, %ld, %f\n", i, j, k, l, srcOffset, destOffset, (float)srcPtr[srcOffset]);
-                    destPtr[destOffset] = srcPtr[srcOffset];
-                }
-            }
-        }
-    }
-}
-
 __global__ void assertEqual(
-    array4 sizes,
-    scalar_t *destPtr,
-    array4 destStrides,
-    scalar_t *srcPtr,
-    array4 srcStrides
+    int64_t size,
+    float *destPtr,
+    double *srcPtr
 ) {
-    for (int64_t i = 0; i < sizes[0]; i++) {
-        for (int64_t j = 0; j < sizes[1]; j++) {
-            for (int64_t k = 0; k < sizes[2]; k++) {
-                for (int64_t l = 0; l < sizes[3]; l++) {
-                    int64_t srcOffset = i * srcStrides[0] + j * srcStrides[1] + k * srcStrides[2] + l * srcStrides[3];
-                    int64_t destOffset = i * destStrides[0] + j * destStrides[1] + k * destStrides[2] + l * destStrides[3];
-                    scalar_t diff = std::abs(destPtr[destOffset] - srcPtr[srcOffset]);
-                    printf("%f\n", diff);
-                    assert(diff < 1e-3);
-                }
-            }
-        }
+    for (int64_t i = 0; i < sizes; i++) {
+        scalar_t diff = std::abs(destPtr[i] - srcPtr[i]);
+        printf("%f\n", diff);
+        assert(diff < 1e-3);
     }
 }
 
+template<typename scalar_t>
 __global__ void initialize(int64_t size, scalar_t *ptr) {
     curandStatePhilox4_32_10_t state;
     curand_init(0, 0, 0, &state);
@@ -99,8 +56,9 @@ void checkCudnnErr(cudnnStatus_t code) {
 
 cudnn_frontend::Tensor getTensorDescriptor(
     int64_t id,
-    array4 sizes,
-    array4 strides
+    std::array<int64_t, 4> sizes,
+    std::array<int64_t, 4> strides,
+
 ) {
     auto tensor = cudnn_frontend::TensorBuilder()
         .setDim(4, sizes.data())
@@ -113,16 +71,11 @@ cudnn_frontend::Tensor getTensorDescriptor(
     return tensor;
 }
 
+template<typename scalar_t>
 void compute(
     scalar_t* devPtrX,
-    array4 sizesX,
-    array4 stridesX,
     scalar_t* devPtrW,
-    array4 sizesW,
-    array4 stridesW,
-    scalar_t* devPtrY,
-    array4 sizesY,
-    array4 stridesY
+    scalar_t* devPtrY
 ) {
     cudaDeviceSynchronize();
     uint64_t convDim = 2;
@@ -140,9 +93,9 @@ void compute(
 
     auto op = cudnn_frontend::OperationBuilder()
         .setOpMode(CUDNN_BACKEND_OPERATION_CONVOLUTION_FORWARD_DESCRIPTOR)
-        .setxDesc(getTensorDescriptor('x', sizesX, stridesX))
-        .setyDesc(getTensorDescriptor('y', sizesY, stridesY))
-        .setwDesc(getTensorDescriptor('w', sizesW, stridesW))
+        .setxDesc(getTensorDescriptor('x', input_sizes.data(), input_strides.data()))
+        .setyDesc(getTensorDescriptor('y', output_sizes.data(), output_sizes.data()))
+        .setwDesc(getTensorDescriptor('w', filter_sizes.data(), filter_strides.data()))
         .setcDesc(conv_descriptor)
         .setAlpha(1.0f)
         .setBeta(0.0f)
