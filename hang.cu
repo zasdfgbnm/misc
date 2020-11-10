@@ -78,7 +78,6 @@ void receiverCode(
     Queue<cudaEvent_t>& senderToReceiver,
     Queue<cudaEvent_t>& receiverToSender) {
   CHECK_CUDA(cudaSetDevice(0));
-
   cudaStream_t stream;
   CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
   for (int i = 0; i < numTensors; i++) {
@@ -87,13 +86,15 @@ void receiverCode(
     receiverToSender.push(theirEvent);
   }
   CHECK_CUDA(cudaStreamDestroy(stream));
+}
 
-  for (int i = 0; i < numTensors; i++) {
+void code3() {
+  CHECK_CUDA(cudaSetDevice(0));
+  for (int i = 0; i < numTensors * 100; i++) {
     cudaEvent_t myEvent;
     CHECK_CUDA(cudaEventCreateWithFlags(&myEvent, FLAG));
     CHECK_CUDA(cudaEventDestroy(myEvent));
   }
-
 }
 
 int main() {
@@ -104,7 +105,9 @@ int main() {
       senderCode, std::ref(senderToReceiver), std::ref(receiverToSender));
   std::thread receiverThread(
       receiverCode, std::ref(senderToReceiver), std::ref(receiverToSender));
+  std::thread thread3(code3);
 
   senderThread.join();
   receiverThread.join();
+  thread3.join();
 }
