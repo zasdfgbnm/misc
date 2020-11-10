@@ -82,14 +82,7 @@ void receiverCode(
 
   cudaStream_t stream;
 
-  std::vector<uint8_t> data(dataSize);
-
   CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
-
-  std::vector<void*> ptrs(numTensors);
-  for (int i = 0; i < numTensors; i++) {
-    CHECK_CUDA(cudaMalloc(&ptrs[i], dataSize));
-  }
 
   for (int i = 0; i < numTensors; i++) {
     cudaStream_t theirStream;
@@ -108,14 +101,6 @@ void receiverCode(
     CHECK_CUDA(cudaEventDestroy(myEvent));
 
     receiverToSender.push(theirEvent);
-  }
-
-  for (int i = 0; i < numTensors; i++) {
-    CHECK_CUDA(cudaMemcpy(data.data(), ptrs[i], dataSize, cudaMemcpyDefault));
-  }
-
-  for (int i = 0; i < numTensors; i++) {
-    CHECK_CUDA(cudaFree(ptrs[i]));
   }
 
   CHECK_CUDA(cudaStreamDestroy(stream));
