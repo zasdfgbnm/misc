@@ -42,12 +42,10 @@ const int dataSize = 256 * 1024; // 256KB
 const int numTensors = 1000;
 } // namespace
 
-auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
-// auto FLAG = cudaEventDisableTiming;
+// auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
+auto FLAG = cudaEventDisableTiming;
 
-void senderCode(
-    Queue<cudaEvent_t>& senderToReceiver,
-    Queue<cudaEvent_t>& receiverToSender) {
+void code1() {
   CHECK_CUDA(cudaSetDevice(0));
 
   void* ptr;
@@ -60,13 +58,7 @@ void senderCode(
     cudaEvent_t event;
     CHECK_CUDA(cudaEventCreateWithFlags(&event, FLAG));
     CHECK_CUDA(cudaEventRecord(event, stream));
-
-    senderToReceiver.push(event);
-  }
-
-  for (int i = 0; i < numTensors; i++) {
-    cudaEvent_t event = receiverToSender.pop();
-
+    CHECK_CUDA(cudaStreamWaitEvent(stream, event, 0));
     CHECK_CUDA(cudaEventDestroy(event));
   }
 
@@ -74,21 +66,7 @@ void senderCode(
   CHECK_CUDA(cudaStreamDestroy(stream));
 }
 
-void receiverCode(
-    Queue<cudaEvent_t>& senderToReceiver,
-    Queue<cudaEvent_t>& receiverToSender) {
-  CHECK_CUDA(cudaSetDevice(0));
-  cudaStream_t stream;
-  CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
-  for (int i = 0; i < numTensors; i++) {
-    cudaEvent_t theirEvent = senderToReceiver.pop();
-    CHECK_CUDA(cudaStreamWaitEvent(stream, theirEvent, 0));
-    receiverToSender.push(theirEvent);
-  }
-  CHECK_CUDA(cudaStreamDestroy(stream));
-}
-
-void code3() {
+void code2() {
   CHECK_CUDA(cudaSetDevice(0));
   for (int i = 0; i < numTensors * 100; i++) {
     cudaEvent_t myEvent;
@@ -101,13 +79,9 @@ int main() {
   Queue<cudaEvent_t> senderToReceiver;
   Queue<cudaEvent_t> receiverToSender;
 
-  std::thread senderThread(
-      senderCode, std::ref(senderToReceiver), std::ref(receiverToSender));
-  std::thread receiverThread(
-      receiverCode, std::ref(senderToReceiver), std::ref(receiverToSender));
-  std::thread thread3(code3);
+  std::thread thread1(code1);
+  std::thread thread2(code2);
 
-  senderThread.join();
-  receiverThread.join();
-  thread3.join();
+  thread1.join();
+  thread2.join();
 }
