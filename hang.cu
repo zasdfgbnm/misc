@@ -39,13 +39,13 @@ class Queue {
 
 namespace {
 const int dataSize = 256 * 1024; // 256KB
-const int numTensors = 100;
+const int numTensors = 1000;
 } // namespace
 
 auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
 
 void senderCode(
-    Queue<std::tuple<cudaStream_t, cudaEvent_t>>& senderToReceiver,
+    Queue<cudaEvent_t>& senderToReceiver,
     Queue<cudaEvent_t>& receiverToSender) {
   CHECK_CUDA(cudaSetDevice(0));
 
@@ -60,7 +60,7 @@ void senderCode(
     CHECK_CUDA(cudaEventCreateWithFlags(&event, FLAG));
     CHECK_CUDA(cudaEventRecord(event, stream));
 
-    senderToReceiver.push(std::make_tuple(stream, event));
+    senderToReceiver.push(event);
   }
 
   for (int i = 0; i < numTensors; i++) {
@@ -74,7 +74,7 @@ void senderCode(
 }
 
 void receiverCode(
-    Queue<std::tuple<cudaStream_t, cudaEvent_t>>& senderToReceiver,
+    Queue<cudaEvent_t>& senderToReceiver,
     Queue<cudaEvent_t>& receiverToSender) {
   CHECK_CUDA(cudaSetDevice(0));
 
@@ -83,9 +83,7 @@ void receiverCode(
   CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
 
   for (int i = 0; i < numTensors; i++) {
-    cudaStream_t theirStream;
-    cudaEvent_t theirEvent;
-    std::tie(theirStream, theirEvent) = senderToReceiver.pop();
+    cudaEvent_t theirEvent = senderToReceiver.pop();
 
     CHECK_CUDA(cudaStreamWaitEvent(stream, theirEvent, 0));
 
@@ -93,7 +91,7 @@ void receiverCode(
     CHECK_CUDA(cudaEventCreateWithFlags(&myEvent, FLAG));
 
     CHECK_CUDA(cudaEventRecord(myEvent, stream));
-    CHECK_CUDA(cudaStreamWaitEvent(theirStream, myEvent, 0));
+    // CHECK_CUDA(cudaStreamWaitEvent(theirStream, myEvent, 0));
 
     CHECK_CUDA(cudaEventDestroy(myEvent));
 
@@ -104,7 +102,7 @@ void receiverCode(
 }
 
 int main() {
-  Queue<std::tuple<cudaStream_t, cudaEvent_t>> senderToReceiver;
+  Queue<cudaEvent_t> senderToReceiver;
   Queue<cudaEvent_t> receiverToSender;
 
   std::thread senderThread(
