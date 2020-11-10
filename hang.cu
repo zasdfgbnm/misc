@@ -43,7 +43,7 @@ const int numTensors = 100;
 } // namespace
 
 void senderCode(
-    Queue<std::tuple<void*, cudaStream_t, cudaEvent_t>>& senderToReceiver,
+    Queue<std::tuple<cudaStream_t, cudaEvent_t>>& senderToReceiver,
     Queue<cudaEvent_t>& receiverToSender) {
   CHECK_CUDA(cudaSetDevice(0));
 
@@ -62,7 +62,7 @@ void senderCode(
         &event, cudaEventDisableTiming | cudaEventInterprocess));
     CHECK_CUDA(cudaEventRecord(event, stream));
 
-    senderToReceiver.push(std::make_tuple(ptr, stream, event));
+    senderToReceiver.push(std::make_tuple(stream, event));
   }
 
   for (int i = 0; i < numTensors; i++) {
@@ -76,7 +76,7 @@ void senderCode(
 }
 
 void receiverCode(
-    Queue<std::tuple<void*, cudaStream_t, cudaEvent_t>>& senderToReceiver,
+    Queue<std::tuple<cudaStream_t, cudaEvent_t>>& senderToReceiver,
     Queue<cudaEvent_t>& receiverToSender) {
   CHECK_CUDA(cudaSetDevice(0));
 
@@ -92,14 +92,11 @@ void receiverCode(
   }
 
   for (int i = 0; i < numTensors; i++) {
-    void* theirPtr;
     cudaStream_t theirStream;
     cudaEvent_t theirEvent;
-    std::tie(theirPtr, theirStream, theirEvent) = senderToReceiver.pop();
+    std::tie(theirStream, theirEvent) = senderToReceiver.pop();
 
     CHECK_CUDA(cudaStreamWaitEvent(stream, theirEvent, 0));
-    CHECK_CUDA(cudaMemcpyAsync(
-        ptrs[i], theirPtr, dataSize, cudaMemcpyDeviceToDevice, stream));
 
     cudaEvent_t myEvent;
     CHECK_CUDA(cudaEventCreateWithFlags(
@@ -125,7 +122,7 @@ void receiverCode(
 }
 
 int main() {
-  Queue<std::tuple<void*, cudaStream_t, cudaEvent_t>> senderToReceiver;
+  Queue<std::tuple<cudaStream_t, cudaEvent_t>> senderToReceiver;
   Queue<cudaEvent_t> receiverToSender;
 
   std::thread senderThread(
