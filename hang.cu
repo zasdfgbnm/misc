@@ -86,11 +86,11 @@ void receiverCode(
     cudaEvent_t theirEvent = senderToReceiver.pop();
     CHECK_CUDA(cudaStreamWaitEvent(stream, theirEvent, 0));
     receiverToSender.push(theirEvent);
-
+  }
+  for (int i = 0; i < numTensors; i++) {
     cudaEvent_t myEvent;
     CHECK_CUDA(cudaEventCreateWithFlags(&myEvent, FLAG));
     CHECK_CUDA(cudaEventDestroy(myEvent));
-
   }
 
   CHECK_CUDA(cudaStreamDestroy(stream));
