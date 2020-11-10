@@ -14,41 +14,17 @@
     }                                                   \
   }
 
-template <typename T>
-class Queue {
- public:
-  void push(T t) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    queue_.push_back(std::move(t));
-    cv_.notify_all();
-  }
 
-  T pop() {
-    std::unique_lock<std::mutex> lock(mutex_);
-    cv_.wait(lock, [&]() { return !queue_.empty(); });
-    T t = std::move(queue_.front());
-    queue_.pop_front();
-    return t;
-  }
+const int N = 1000;
 
- private:
-  std::deque<T> queue_;
-  std::mutex mutex_;
-  std::condition_variable cv_;
-};
-
-namespace {
-const int numTensors = 1000;
-} // namespace
-
-auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
-// auto FLAG = cudaEventDisableTiming;
+// auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
+auto FLAG = cudaEventDisableTiming;
 
 void code1() {
   CHECK_CUDA(cudaSetDevice(0));
   cudaStream_t stream;
   CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
-  for (int i = 0; i < numTensors; i++) {
+  for (int i = 0; i < N; i++) {
     cudaEvent_t event;
     CHECK_CUDA(cudaEventCreateWithFlags(&event, FLAG));
     CHECK_CUDA(cudaEventRecord(event, stream));
@@ -60,7 +36,7 @@ void code1() {
 
 void code2() {
   CHECK_CUDA(cudaSetDevice(0));
-  for (int i = 0; i < numTensors * 100; i++) {
+  for (int i = 0; i < N; i++) {
     cudaEvent_t myEvent;
     CHECK_CUDA(cudaEventCreateWithFlags(&myEvent, FLAG));
     CHECK_CUDA(cudaEventDestroy(myEvent));
