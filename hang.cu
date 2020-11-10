@@ -38,22 +38,16 @@ class Queue {
 };
 
 namespace {
-const int dataSize = 256 * 1024; // 256KB
 const int numTensors = 1000;
 } // namespace
 
-// auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
-auto FLAG = cudaEventDisableTiming;
+auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
+// auto FLAG = cudaEventDisableTiming;
 
 void code1() {
   CHECK_CUDA(cudaSetDevice(0));
-
-  void* ptr;
   cudaStream_t stream;
-
   CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
-  CHECK_CUDA(cudaMalloc(&ptr, dataSize));
-
   for (int i = 0; i < numTensors; i++) {
     cudaEvent_t event;
     CHECK_CUDA(cudaEventCreateWithFlags(&event, FLAG));
@@ -61,8 +55,6 @@ void code1() {
     CHECK_CUDA(cudaStreamWaitEvent(stream, event, 0));
     CHECK_CUDA(cudaEventDestroy(event));
   }
-
-  CHECK_CUDA(cudaFree(ptr));
   CHECK_CUDA(cudaStreamDestroy(stream));
 }
 
@@ -76,12 +68,8 @@ void code2() {
 }
 
 int main() {
-  Queue<cudaEvent_t> senderToReceiver;
-  Queue<cudaEvent_t> receiverToSender;
-
   std::thread thread1(code1);
   std::thread thread2(code2);
-
   thread1.join();
   thread2.join();
 }
