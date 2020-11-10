@@ -17,8 +17,8 @@
 
 const int N = 1000;
 
-// auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
-auto FLAG = cudaEventDisableTiming;
+auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
+// auto FLAG = cudaEventDisableTiming;
 
 void code1() {
   CHECK_CUDA(cudaSetDevice(0));
