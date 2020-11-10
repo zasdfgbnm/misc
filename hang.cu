@@ -1,9 +1,5 @@
-#include <condition_variable>
-#include <deque>
-#include <mutex>
 #include <thread>
-#include <vector>
-
+#include <stdexcept>
 #include <cuda_runtime.h>
 
 #define CHECK_CUDA(op)                                  \
@@ -17,10 +13,10 @@
 
 const int N = 1000;
 
-auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
-// auto FLAG = cudaEventDisableTiming;
+// auto FLAG = cudaEventDisableTiming | cudaEventInterprocess;
+auto FLAG = cudaEventDisableTiming;
 
-void code1() {
+void code() {
   CHECK_CUDA(cudaSetDevice(0));
   cudaStream_t stream;
   CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
@@ -34,18 +30,9 @@ void code1() {
   CHECK_CUDA(cudaStreamDestroy(stream));
 }
 
-void code2() {
-  CHECK_CUDA(cudaSetDevice(0));
-  for (int i = 0; i < N; i++) {
-    cudaEvent_t myEvent;
-    CHECK_CUDA(cudaEventCreateWithFlags(&myEvent, FLAG));
-    CHECK_CUDA(cudaEventDestroy(myEvent));
-  }
-}
-
 int main() {
-  std::thread thread1(code1);
-  std::thread thread2(code2);
+  std::thread thread1(code);
+  std::thread thread2(code);
   thread1.join();
   thread2.join();
 }
