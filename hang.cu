@@ -89,7 +89,6 @@ void receiverCode(
 
     cudaEvent_t myEvent;
     CHECK_CUDA(cudaEventCreateWithFlags(&myEvent, FLAG));
-    CHECK_CUDA(cudaEventRecord(myEvent, stream));
     CHECK_CUDA(cudaEventDestroy(myEvent));
 
     receiverToSender.push(theirEvent);
