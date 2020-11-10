@@ -9,10 +9,11 @@ def assertEqual(x, y, **kwargs):
 
 n, c, h, w, k, filter_size = 4, 2, 8, 8, 4, 2
 data = torch.randn((n, c, h, w), dtype=torch.float32, device='cuda')
-conv = nn.Conv2d(c, k, filter_size).float().cuda()
+
+conv = nn.Conv2d(c, k, filter_size).cuda()
 ref_out = conv(data)
 
-conv.to(memory_format=torch.channels_last)
+conv.cuda().to(memory_format=torch.channels_last)
 out = conv(data)
 
 assertEqual(out, ref_out)

@@ -11,3 +11,5 @@ __pycache__
 *.qdrep
 *.sqlite
 /cudnn1111
+*.ptx
+*.cubin

@@ -1,0 +1,94 @@
+(gdb) attach 185507
+Attaching to process 185507
+[New LWP 185511]
+[New LWP 185512]
+[New LWP 185517]
+[New LWP 185518]
+[New LWP 185519]
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+0x00007f99e2df79b7 in __pthread_clockjoin_ex () from /usr/lib/libpthread.so.0
+(gdb) info threads
+  Id   Target Id                                           Frame 
+* 1    Thread 0x7f99e28dc000 (LWP 185507) "a.out"          0x00007f99e2df79b7 in __pthread_clockjoin_ex () from /usr/lib/libpthread.so.0
+  2    Thread 0x7f99e28d7000 (LWP 185511) "a.out"          0x00007f99e2dfb376 in pthread_rwlock_wrlock () from /usr/lib/libpthread.so.0
+  3    Thread 0x7f99e20d6000 (LWP 185512) "a.out"          0x00007f99e05b2e75 in ?? () from /usr/lib/libcuda.so.1
+  4    Thread 0x7f99d5fff000 (LWP 185517) "a.out"          0x00007f99e29e0ce0 in accept4 () from /usr/lib/libc.so.6
+  5    Thread 0x7f99d57fe000 (LWP 185518) "cuda-EvtHandlr" 0x00007f99e29d446f in poll () from /usr/lib/libc.so.6
+  6    Thread 0x7f99d4ffd000 (LWP 185519) "a.out"          0x00007f99e2dfc9c8 in pthread_cond_timedwait@@GLIBC_2.3.2 () from /usr/lib/libpthread.so.0
+(gdb) thread 2
+[Switching to thread 2 (Thread 0x7f99e28d7000 (LWP 185511))]
+#0  0x00007f99e2dfb376 in pthread_rwlock_wrlock () from /usr/lib/libpthread.so.0
+(gdb) bt
+#0  0x00007f99e2dfb376 in pthread_rwlock_wrlock () from /usr/lib/libpthread.so.0
+#1  0x00007f99e0476b6f in ?? () from /usr/lib/libcuda.so.1
+#2  0x00007f99e066fe90 in ?? () from /usr/lib/libcuda.so.1
+#3  0x00007f99e042654a in ?? () from /usr/lib/libcuda.so.1
+#4  0x00007f99e05049ac in cuMemFree_v2 () from /usr/lib/libcuda.so.1
+#5  0x0000556e49dc736e in cudart::cudaApiFree(void*) ()
+#6  0x0000556e49df8f18 in cudaFree ()
+#7  0x0000556e49dbc052 in senderCode (senderToReceiver=..., receiverToSender=...) at hang.cu:74
+#8  0x0000556e49dc2079 in std::__invoke_impl<void, void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > (
+    __f=@0x556e4a019508: 0x556e49dbbce4 <senderCode(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&)>) at /usr/include/c++/10.2.0/bits/invoke.h:60
+#9  0x0000556e49dc1f90 in std::__invoke<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > (
+    __fn=@0x556e4a019508: 0x556e49dbbce4 <senderCode(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&)>) at /usr/include/c++/10.2.0/bits/invoke.h:95
+#10 0x0000556e49dc1ec3 in std::thread::_Invoker<std::tuple<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > >::_M_invoke<0ul, 1ul, 2ul> (this=0x556e4a0194f8) at /usr/include/c++/10.2.0/thread:264
+#11 0x0000556e49dc1e60 in std::thread::_Invoker<std::tuple<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > >::operator() (this=0x556e4a0194f8) at /usr/include/c++/10.2.0/thread:271
+#12 0x0000556e49dc1e44 in std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > > >::_M_run (this=0x556e4a0194f0) at /usr/include/c++/10.2.0/thread:215
+#13 0x00007f99e2cd9c24 in std::execute_native_thread_routine (__p=0x556e4a0194f0) at /build/gcc/src/gcc/libstdc++-v3/src/c++11/thread.cc:80
+#14 0x00007f99e2df63e9 in start_thread () from /usr/lib/libpthread.so.0
+#15 0x00007f99e29df293 in clone () from /usr/lib/libc.so.6
+(gdb) thread 3
+[Switching to thread 3 (Thread 0x7f99e20d6000 (LWP 185512))]
+#0  0x00007f99e05b2e75 in ?? () from /usr/lib/libcuda.so.1
+(gdb) bt
+#0  0x00007f99e05b2e75 in ?? () from /usr/lib/libcuda.so.1
+#1  0x00007f99e043a1ff in ?? () from /usr/lib/libcuda.so.1
+#2  0x00007f99e05161c5 in ?? () from /usr/lib/libcuda.so.1
+#3  0x00007f99e066ec56 in ?? () from /usr/lib/libcuda.so.1
+#4  0x00007f99e066f761 in ?? () from /usr/lib/libcuda.so.1
+#5  0x00007f99e0567106 in ?? () from /usr/lib/libcuda.so.1
+#6  0x00007f99e0516539 in ?? () from /usr/lib/libcuda.so.1
+#7  0x00007f99e0426552 in ?? () from /usr/lib/libcuda.so.1
+#8  0x00007f99e05049ac in cuMemFree_v2 () from /usr/lib/libcuda.so.1
+#9  0x0000556e49dc736e in cudart::cudaApiFree(void*) ()
+#10 0x0000556e49df8f18 in cudaFree ()
+#11 0x0000556e49dbc79d in receiverCode (senderToReceiver=..., receiverToSender=...) at hang.cu:121
+#12 0x0000556e49dc2079 in std::__invoke_impl<void, void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > (
+    __f=@0x556e4a019678: 0x556e49dbc1e6 <receiverCode(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&)>) at /usr/include/c++/10.2.0/bits/invoke.h:60
+#13 0x0000556e49dc1f90 in std::__invoke<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > (
+    __fn=@0x556e4a019678: 0x556e49dbc1e6 <receiverCode(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&)>) at /usr/include/c++/10.2.0/bits/invoke.h:95
+#14 0x0000556e49dc1ec3 in std::thread::_Invoker<std::tuple<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > >::_M_invoke<0ul, 1ul, 2ul> (this=0x556e4a019668) at /usr/include/c++/10.2.0/thread:264
+#15 0x0000556e49dc1e60 in std::thread::_Invoker<std::tuple<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > >::operator() (this=0x556e4a019668) at /usr/include/c++/10.2.0/thread:271
+#16 0x0000556e49dc1e44 in std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (*)(Queue<std::tuple<void*, CUstream_st*, CUevent_st*> >&, Queue<CUevent_st*>&), std::reference_wrapper<Queue<std::tuple<void*, CUstream_st*, CUevent_st*> > >, std::reference_wrapper<Queue<CUevent_st*> > > > >::_M_run (this=0x556e4a019660) at /usr/include/c++/10.2.0/thread:215
+#17 0x00007f99e2cd9c24 in std::execute_native_thread_routine (__p=0x556e4a019660) at /build/gcc/src/gcc/libstdc++-v3/src/c++11/thread.cc:80
+#18 0x00007f99e2df63e9 in start_thread () from /usr/lib/libpthread.so.0
+#19 0x00007f99e29df293 in clone () from /usr/lib/libc.so.6
+(gdb) thread 4
+[Switching to thread 4 (Thread 0x7f99d5fff000 (LWP 185517))]
+#0  0x00007f99e29e0ce0 in accept4 () from /usr/lib/libc.so.6
+(gdb) bt
+#0  0x00007f99e29e0ce0 in accept4 () from /usr/lib/libc.so.6
+#1  0x00007f99e05a5693 in ?? () from /usr/lib/libcuda.so.1
+#2  0x00007f99e059f6f6 in ?? () from /usr/lib/libcuda.so.1
+#3  0x00007f99e2df63e9 in start_thread () from /usr/lib/libpthread.so.0
+#4  0x00007f99e29df293 in clone () from /usr/lib/libc.so.6
+(gdb) thread 5
+[Switching to thread 5 (Thread 0x7f99d57fe000 (LWP 185518))]
+#0  0x00007f99e29d446f in poll () from /usr/lib/libc.so.6
+(gdb) bt
+#0  0x00007f99e29d446f in poll () from /usr/lib/libc.so.6
+#1  0x00007f99e05a5f01 in ?? () from /usr/lib/libcuda.so.1
+#2  0x00007f99e04e6cea in ?? () from /usr/lib/libcuda.so.1
+#3  0x00007f99e059f6f6 in ?? () from /usr/lib/libcuda.so.1
+#4  0x00007f99e2df63e9 in start_thread () from /usr/lib/libpthread.so.0
+#5  0x00007f99e29df293 in clone () from /usr/lib/libc.so.6
+(gdb) thread 6
+[Switching to thread 6 (Thread 0x7f99d4ffd000 (LWP 185519))]
+#0  0x00007f99e2dfc9c8 in pthread_cond_timedwait@@GLIBC_2.3.2 () from /usr/lib/libpthread.so.0
+(gdb) bt
+#0  0x00007f99e2dfc9c8 in pthread_cond_timedwait@@GLIBC_2.3.2 () from /usr/lib/libpthread.so.0
+#1  0x00007f99e0515d4f in ?? () from /usr/lib/libcuda.so.1
+#2  0x00007f99e059f6f6 in ?? () from /usr/lib/libcuda.so.1
+#3  0x00007f99e2df63e9 in start_thread () from /usr/lib/libpthread.so.0
+#4  0x00007f99e29df293 in clone () from /usr/lib/libc.so.6
