@@ -13,3 +13,4 @@ __pycache__
 /cudnn1111
 *.ptx
 *.cubin
+runs
