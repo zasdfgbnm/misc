@@ -4,14 +4,12 @@ test_autograd
 distributed/test_c10d
 distributed/test_data_parallel
 distributed/test_distributed_spawn
-test_dispatch
 test_foreach
 test_jit
 test_multiprocessing_spawn
 test_optim
 test_ops
 test_nn
-test_unary_ufuncs
 test_jit_legacy
 test_jit_profiling
 test_jit_py3
