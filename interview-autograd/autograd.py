@@ -99,8 +99,6 @@ def autograd(func):
             if isinstance(right, str):
                 grads[right].append(
                     ('-', ((f'd{out}', '*', left), '/', (right, '*', right))))
-    print(variables)
-    print(grads)
 
     # emit backward code
     pending = deque([f"d{x}" for x in func["args"]])
@@ -118,7 +116,7 @@ def autograd(func):
         assert isinstance(expr, tuple)
         if len(expr) == 2:
             assert expr[0] == '-'
-            return f'- ({emit_expr(expr[1])})'
+            return f'(- {emit_expr(expr[1])})'
         assert len(expr) == 3
         left, op, right = expr
         return f'({emit_expr(left)} {op} {emit_expr(right)})'
