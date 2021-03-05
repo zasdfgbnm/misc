@@ -8,7 +8,8 @@ def f(x, y, z):
     t = x - y
     u = t * z
     p = u / y
-    q = u + y
+    r = p + 1
+    q = r + y
     return p, q
 
 
