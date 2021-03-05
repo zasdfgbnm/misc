@@ -1,19 +1,20 @@
+from collections import defaultdict
 import inspect
 import ast
 
 
 def f(x, y, z):
-    x = x + 1
     t = x - y
     u = t * z
     p = u / y
     q = u * y
+    # no x = x + 1
     return p, q
 
 
 def parse(func):
     result = {}
-    source = inspect.getsource(f)
+    source = inspect.getsource(func)
     module = ast.parse(source)
     function_def = module.body[0]
 
@@ -53,4 +54,8 @@ def parse(func):
     return result
 
 
-print(parse(f))
+parsed = parse(f)
+print(parsed)
+
+
+print(parsed)
