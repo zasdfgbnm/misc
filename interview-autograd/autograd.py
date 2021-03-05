@@ -1,6 +1,7 @@
 import inspect
 import ast
 
+
 def f(x, y, z):
     x = x + 1
     t = x - y
@@ -8,6 +9,7 @@ def f(x, y, z):
     p = u / y
     q = u * y
     return p, q
+
 
 def parse(func):
     result = {}
