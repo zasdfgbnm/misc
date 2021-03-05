@@ -1,15 +1,19 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 import inspect
 import ast
+import textwrap
+import numbers
 
 
-# single op, SSA
+# single op, SSA, maybe dead code
+# variable names do not start with 'd', or 'grad'
 def f(x, y, z):
     t = x - y
     u = t * z
     p = u / y
     r = p + 1
     q = r + y
+    m = p + q
     return p, q
 
 
@@ -62,9 +66,91 @@ print(parsed)
 
 
 def autograd(func):
-    args = (f'd{x}' for x in func['return'])
-    result = f"def grad_{func['name']}({', '.join(args)}):"
-    print(result)
+    args = tuple(f'grad_{x}' for x in func['return']) + tuple(
+        x for x in func['return']) + tuple(x for x in func['args'])
+    def_line = f"def grad_{func['name']}({', '.join(args)}):"
+
+    # get forward and backward graph
+    variables = {}
+    grads = defaultdict(lambda: [], {x: [f'grad_{x}'] for x in func['return']})
+    for out, eq, left, op, right in reversed(func['body']):
+        assert eq == "="
+        variables[out] = (left, op, right)
+        if out not in grads:
+            print('Dead code detected:', f'{out} = {left} {op} {right}')
+            continue
+        if op == '+':
+            for x in (left, right):
+                if isinstance(x, str):
+                    grads[x].append(f'd{out}')
+        elif op == '-':
+            if isinstance(left, str):
+                grads[left].append(f'd{out}')
+            if isinstance(right, str):
+                grads[right].append(('-', f'd{out}'))
+        elif op == '*':
+            for x, y in ((left, right), (right, left)):
+                if isinstance(x, str):
+                    grads[x].append((f'd{out}', '*', y))
+        else:
+            assert op == '/'
+            if isinstance(left, str):
+                grads[left].append((f'd{out}', '/', right))
+            if isinstance(right, str):
+                grads[right].append(
+                    ('-', ((f'd{out}', '*', left), '/', (right, '*', right))))
+    print(variables)
+    print(grads)
+
+    # emit backward code
+    pending = deque([f"d{x}" for x in func["args"]])
+    done = {f'grad_{x}' for x in func['return']} | {
+        x for x in func["args"]} | {x for x in func['return']}
+    rev_code_lines = [f'return {", ".join(pending)}']
+
+    def emit_expr(expr):
+        if isinstance(expr, numbers.Number):
+            return str(expr)
+        if isinstance(expr, str):
+            if expr not in done:
+                pending.append(expr)
+            return expr
+        assert isinstance(expr, tuple)
+        if len(expr) == 2:
+            assert expr[0] == '-'
+            return f'- ({emit_expr(expr[1])})'
+        assert len(expr) == 3
+        left, op, right = expr
+        return f'({emit_expr(left)} {op} {emit_expr(right)})'
+
+    def emit_exprs(exprs):
+        exprs = [emit_expr(e) for e in exprs]
+        return ' + '.join(exprs)
+
+    while len(pending) > 0:
+        next = pending.popleft()
+        if next in done:
+            continue
+        if next.startswith('d'):
+            exprs = grads[next[1:]]
+        else:
+            exprs = [variables[next]]
+        code = f'{next} = {emit_exprs(exprs)}'
+        rev_code_lines.append(code)
+
+    # deduplicate and revert
+    code_lines = []
+    known = set()
+    for line in reversed(rev_code_lines):
+        var = line.split('=')[0].strip()
+        if var in known:
+            continue
+        known.add(var)
+        code_lines.append(line)
+    code = "\n".join(code_lines)
+    return f'{def_line}\n{textwrap.indent(code, "    ")}'
 
 
-autograd(parsed)
+backward = autograd(parsed)
+print(backward)
+exec(backward)
