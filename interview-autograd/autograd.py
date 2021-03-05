@@ -67,7 +67,7 @@ print(parsed)
 
 def autograd(func):
     args = tuple(f'grad_{x}' for x in func['return']) + tuple(
-        x for x in func['return']) + tuple(x for x in func['args'])
+        x for x in func['args']) + tuple(x for x in func['return'])
     def_line = f"def grad_{func['name']}({', '.join(args)}):"
 
     # get forward and backward graph
@@ -152,3 +152,35 @@ def autograd(func):
 backward = autograd(parsed)
 print(backward)
 exec(backward)
+
+
+x = 1
+y = 2
+z = 3
+delta = 0.001
+p, q = f(x, y, z)
+p1, q1 = f(x + delta, y, z)
+p2, q2 = f(x - delta, y, z)
+dpdx = (p1 - p2) / (2 * delta)
+dqdx = (q1 - q2) / (2 * delta)
+p1, q1 = f(x, y + delta, z)
+p2, q2 = f(x, y - delta, z)
+dpdy = (p1 - p2) / (2 * delta)
+dqdy = (q1 - q2) / (2 * delta)
+p1, q1 = f(x, y, z + delta)
+p2, q2 = f(x, y, z - delta)
+dpdz = (p1 - p2) / (2 * delta)
+dqdz = (q1 - q2) / (2 * delta)
+numerical_jacobian = [
+    [dpdx, dpdy, dpdz],
+    [dqdx, dqdy, dqdz]
+]
+dpdx, dpdy, dpdz = grad_f(1, 0, x, y, z, p, q)
+dqdx, dqdy, dqdz = grad_f(0, 1, x, y, z, p, q)
+autograd_jacobian = [
+    [dpdx, dpdy, dpdz],
+    [dqdx, dqdy, dqdz]
+]
+
+print(numerical_jacobian)
+print(autograd_jacobian)
