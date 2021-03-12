@@ -1,0 +1,17 @@
+11.2
+
+ Time(%)  Total Time (ns)  Instances  Average  Minimum  Maximum                                                  Name
+ -------  ---------------  ---------  -------  -------  -------  ----------------------------------------------------------------------------------------------------
+    37.4           133280          3  44426.7    43712    45152  void cub::DeviceRadixSortDownsweepKernel<cub::DeviceRadixSortPolicy<int, int, int>::Policy700, true…
+    21.7            77599          5  15519.8    15327    15776  void cub::RadixSortScanBinsKernel<cub::DeviceRadixSortPolicy<int, int, int>::Policy700, int>(int*, …
+    20.4            72959          2  36479.5    28928    44031  void cub::DeviceRadixSortDownsweepKernel<cub::DeviceRadixSortPolicy<int, int, int>::Policy700, fals…
+    12.2            43648          3  14549.3    14112    15392  void cub::DeviceRadixSortUpsweepKernel<cub::DeviceRadixSortPolicy<int, int, int>::Policy700, true, …
+     8.2            29312          2  14656.0    14304    15008  void cub::DeviceRadixSortUpsweepKernel<cub::DeviceRadixSortPolicy<int, int, int>::Policy700, false,…
+
+10.2
+
+Time(%)      Total Time   Instances         Average         Minimum         Maximum  Name
+-------  --------------  ----------  --------------  --------------  --------------  --------------------------------------------------------------------------------
+   94.0          267293           4         66823.2           56543           75040  DeviceRadixSortOnesweepKernel
+    5.4           15488           1         15488.0           15488           15488  DeviceRadixSortHistogramKernel
+    0.5            1472           1          1472.0            1472            1472  DeviceRadixSortExclusiveSumKernel
