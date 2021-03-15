@@ -16,7 +16,7 @@ class Number:
 
     def zero_grad(self):
         if self.requires_grad:
-            self.grad.zero_()
+            self.grad = Number(0)
         if self.leaves is not None:
             for leaf in self.leaves:
                 leaf.zero_grad()
@@ -215,6 +215,7 @@ def test4():
     bg = autograd(s, b); assert bg == a.num ** 2 + 2 * b.num, bg
 
     print(s, a, sep='\n')
+    s.zero_grad()
     agg = autograd(ag, a)
     print(s, a, agg, sep='\n')
 
